@@ -1,6 +1,7 @@
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import keyPairJson from "../keypair.json" with { type: "json" };
 import { SuiGrpcClient } from "@mysten/sui/grpc";
+import { Transaction } from "@mysten/sui/transactions";
 
 /**
  *
@@ -15,8 +16,8 @@ const suiAddress = keypair.getPublicKey().toSuiAddress();
 const PACKAGE_ID = `0x57e029acbe322c733c1936ccba3642f27d0525c3883cf4e2742053ba2c5490b0`;
 
 const suiClient = new SuiGrpcClient({
-	network: 'testnet',
-	baseUrl: 'https://fullnode.testnet.sui.io:443',
+  network: "testnet",
+  baseUrl: "https://fullnode.testnet.sui.io:443",
 });
 
 /**
@@ -28,56 +29,42 @@ const suiClient = new SuiGrpcClient({
  * When finished, run the following command in the scripts directory to test your solution:
  *
  * pnpm return-objects
- *
- * RESOURCES:
- * - https://sdk.mystenlabs.com/typescript/transaction-building/basics#transactions
  */
 const main = async () => {
   /**
-   * Task 1:
-   *
-   * Create a new Transaction instance from the @mysten/sui/transactions module.
+   * Task 1: Create a new Transaction instance.
    */
+  const tx = new Transaction();
 
   /**
-   * Task 2:
-   *
-   * Execute the call to the `sui_nft::new` function to the transaction instance.
-   *
-   * The target should be in the format {package address}::{module name}::{function name}. The
-   * package address is provided above. The module name is `sui_nft` and the function name is `new`.
-   *
-   * HINT: The arguments and typeArguments arguments are optional since this function does not take
-   * any arguments or type arguments.
+   * Task 2: Call `sui_nft::new` - this returns a SuiNFT object.
    */
+  const [nft] = tx.moveCall({
+    target: `${PACKAGE_ID}::sui_nft::new`,
+  });
 
   /**
-   * Task 3:
-   *
-   * Transfer the newly created SuiNFT object to your address.
-   *
-   * Use `tx.transferObjects(objects, address)` - Transfers a list of objects to the specified address.
-   *
-   * HINT: Use `suiAddress`` to transfer the object to your address.
+   * Task 3: Transfer the returned NFT object to our address.
+   * If we don't handle the returned object, the transaction will abort.
    */
-
+  tx.transferObjects([nft], suiAddress);
 
   /**
-   * Task 4:
-   *
-   * Sign and execute the transaction using the SuiClient instance created above.
-   *
-   * Print the result to the console.
+   * Task 4: Sign and execute the transaction.
    */
+  const result = await suiClient.signAndExecuteTransaction({
+    signer: keypair,
+    transaction: tx,
+    options: {
+      showObjectChanges: true,
+      showEffects: true,
+    },
+  });
 
-
-  /**
-   * Task 5: Run the script with the command below and ensure it works!
-   * 
-   * pnpm return-objects
-   * 
-   * Verify the transaction on the Sui Explorer: https://suiscan.xyz/testnet/home
-   */
+  const digest = (result as any).Transaction?.digest;
+  console.log("✅ Transaction successful!");
+  console.log(`Transaction digest: ${digest}`);
+  console.log(`View on explorer: https://suiscan.xyz/testnet/tx/${digest}`);
 };
 
 main();
