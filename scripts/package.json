@@ -1,0 +1,22 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "scripts": {
+    "init-keypair": "ts-node src/init.ts",
+    "return-objects": "ts-node src/return_objects_exercise.ts",
+    "input-objects": "ts-node src/input_objects_exercise.ts",
+    "scavenger-hunt": "ts-node src/scavenger_hunt_exercise.ts"
+  },
+  "dependencies": {
+    "@mysten/sui": "^2.3.0",
+    "dotenv": "^16.4.5"
+  }
+}
